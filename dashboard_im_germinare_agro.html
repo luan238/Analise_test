@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Germinare Agro - Inteligência de Mercado Nacional</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js para Gráficos Dinâmicos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        germinare: {
+                            orange: '#f97316', 
+                            green: '#22c55e',  
+                            bg: '#0f172a',      // Dark Mode Premium
+                            card: '#1e293b',    // Fundo dos cards
+                            border: '#334155',  // Bordas sutis
+                            muted: '#94a3b8'    // Texto secundário
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #0f172a; 
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .germinare-logo { letter-spacing: -1px; }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header Corporativo -->
+    <header class="bg-germinare-card border-b border-germinare-border shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <h1 class="text-3xl font-bold germinare-logo text-germinare-orange">
+                    germin<span class="relative">a<i class="fa-solid fa-leaf text-[12px] text-germinare-green absolute -bottom-1 -left-1"></i></span>re
+                </h1>
+                <span class="text-germinare-border text-2xl font-light">|</span>
+                <p class="text-sm text-germinare-muted font-medium tracking-wide uppercase mt-1">Dashboard IM</p>
+            </div>
+            
+            <!-- Filtro de Culturas -->
+            <div class="flex items-center gap-3 bg-germinare-bg px-4 py-2 rounded-lg border border-germinare-border shadow-inner">
+                <label for="cultura-select" class="text-sm font-semibold text-germinare-muted"><i class="fa-solid fa-filter mr-2 text-germinare-green"></i>Cultura:</label>
+                <select id="cultura-select" class="bg-transparent text-white text-sm font-bold focus:outline-none focus:ring-0 cursor-pointer appearance-none pr-4" onchange="atualizarDashboard(this.value)">
+                    <option value="soja" class="bg-germinare-card text-white">Soja</option>
+                    <option value="sorgo" class="bg-germinare-card text-white">Sorgo</option>
+                    <option value="trigo" class="bg-germinare-card text-white">Trigo</option>
+                    <option value="cafe_arabica" class="bg-germinare-card text-white">Café Arábica</option>
+                    <option value="cafe_robusta" class="bg-germinare-card text-white">Café Robusta</option>
+                    <option value="suco_laranja" class="bg-germinare-card text-white">Suco de Laranja</option>
+                    <option value="algodao" class="bg-germinare-card text-white">Algodão (Pluma)</option>
+                    <option value="caroco_algodao" class="bg-germinare-card text-white">Caroço de Algodão</option>
+                    <option value="ddg" class="bg-germinare-card text-white">DDG</option>
+                    <option value="ddgs" class="bg-germinare-card text-white">DDGS</option>
+                    <option value="cana" class="bg-germinare-card text-white">Cana de Açúcar</option>
+                </select>
+                <i class="fa-solid fa-chevron-down text-germinare-muted text-xs"></i>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 flex-grow space-y-6 fade-in">
+        
+        <!-- Cards de Resumo e Inteligência -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Card 1: Produção -->
+            <div class="bg-germinare-card rounded-xl border-l-4 border-l-germinare-green border border-germinare-border p-6 shadow-md flex items-center justify-between">
+                <div>
+                    <h3 class="text-germinare-muted text-xs font-bold uppercase tracking-wider mb-2" id="titulo-producao">Produção Estimada (26/27)</h3>
+                    <div class="flex items-baseline gap-2">
+                        <p class="text-4xl font-extrabold text-white" id="valor-producao">--</p>
+                        <p class="text-sm font-medium text-germinare-muted" id="unidade-producao">--</p>
+                    </div>
+                </div>
+                <div class="bg-germinare-bg p-4 rounded-full border border-germinare-border">
+                    <i id="icone-cultura" class="fa-solid fa-seedling text-3xl text-germinare-green"></i>
+                </div>
+            </div>
+
+            <!-- Card 2: Potencial de Mercado -->
+            <div class="bg-germinare-card rounded-xl border-l-4 border-l-germinare-orange border border-germinare-border p-6 shadow-md">
+                <h3 class="text-germinare-orange text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-lightbulb"></i> Potencial de Mercado & Ação
+                </h3>
+                <p class="text-sm text-gray-300 leading-relaxed font-medium" id="texto-potencial">
+                    <!-- Preenchido via JS -->
+                </p>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Gráfico de Evolução (Linha) -->
+            <div class="lg:col-span-2 bg-germinare-card rounded-xl border border-germinare-border p-6 shadow-md flex flex-col">
+                <div class="mb-4 pb-3 border-b border-germinare-border">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-germinare-green"></i>
+                        Evolução da Produção
+                    </h2>
+                    <p class="text-xs text-germinare-muted mt-1">Comparativo de performance entre as safras 24/25, 25/26 e projetada 26/27.</p>
+                </div>
+                <div class="relative flex-grow h-72 w-full">
+                    <canvas id="chartEvolucao"></canvas>
+                </div>
+                <!-- FONTE EXATAMENTE ABAIXO DO GRÁFICO -->
+                <div class="mt-4 pt-3 border-t border-germinare-border text-right">
+                    <span class="text-xs text-germinare-muted font-medium bg-germinare-bg px-3 py-1 rounded border border-germinare-border inline-flex items-center gap-1">
+                        <i class="fa-solid fa-database text-[10px]"></i> <span id="fonte-evolucao">Fonte: --</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Gráfico de Estados (Doughnut) -->
+            <div class="lg:col-span-1 bg-germinare-card rounded-xl border border-germinare-border p-6 shadow-md flex flex-col">
+                <div class="mb-4 pb-3 border-b border-germinare-border">
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-map-location-dot text-germinare-orange"></i>
+                        Principais Praças (26/27)
+                    </h2>
+                    <p class="text-xs text-germinare-muted mt-1">Distribuição geográfica da produção (Top 4 estados).</p>
+                </div>
+                <div class="relative flex-grow flex items-center justify-center min-h-[250px]">
+                    <canvas id="chartEstados"></canvas>
+                </div>
+                <!-- FONTE EXATAMENTE ABAIXO DO GRÁFICO -->
+                <div class="mt-4 pt-3 border-t border-germinare-border text-right">
+                    <span class="text-xs text-germinare-muted font-medium bg-germinare-bg px-3 py-1 rounded border border-germinare-border inline-flex items-center gap-1">
+                        <i class="fa-solid fa-database text-[10px]"></i> <span id="fonte-estados">Fonte: --</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Configurações globais Chart.js para Dark Mode #0f172a
+        Chart.defaults.color = '#94a3b8'; // text-germinare-muted
+        Chart.defaults.font.family = 'Inter';
+        Chart.defaults.borderColor = 'rgba(51, 65, 85, 0.5)'; // border-germinare-border com opacidade
+
+        // Instâncias dos gráficos
+        let chartEv = null;
+        let chartEst = null;
+
+        // Base de Dados Simulada (Inteligência de Mercado)
+        const db = {
+            soja: {
+                nome: "Soja", icone: "fa-seedling", unidade: "Milhões de Toneladas",
+                producao2627: "162.5",
+                evolucao: [147.3, 153.8, 162.5],
+                estados: { labels: ['MT', 'PR', 'RS', 'GO'], dados: [45.2, 22.1, 21.5, 17.0] },
+                fonte: "CONAB / IBGE",
+                insight: "O avanço da soja sobre áreas de pastagem degradada em GO e MT apresenta a maior oportunidade para o portfólio de tratamento de sementes e nutrição inicial da Germinare. Focar em revendas nas regiões de expansão."
+            },
+            sorgo: {
+                nome: "Sorgo", icone: "fa-leaf", unidade: "Milhões de Toneladas",
+                producao2627: "4.8",
+                evolucao: [3.9, 4.3, 4.8],
+                estados: { labels: ['GO', 'MG', 'MT', 'BA'], dados: [1.3, 1.1, 0.9, 0.5] },
+                fonte: "CONAB",
+                insight: "Excelente cultura de safrinha. O aumento de 11% na estimativa demonstra adoção tecnológica. Oportunidade de cross-selling: oferecer pacotes de bioestimulantes para produtores que já compram para a soja em MG e GO."
+            },
+            trigo: {
+                nome: "Trigo", icone: "fa-wheat-awn", unidade: "Milhões de Toneladas",
+                producao2627: "9.2",
+                evolucao: [8.1, 8.6, 9.2],
+                estados: { labels: ['RS', 'PR', 'SC', 'SP'], dados: [4.1, 3.5, 0.6, 0.4] },
+                fonte: "CONAB",
+                insight: "O clima desafiador no Sul exige plantas mais resistentes. Focar campanhas comerciais no Rio Grande do Sul e Paraná destacando soluções foliares da Germinare que reduzem estresse hídrico e térmico."
+            },
+            cafe_arabica: {
+                nome: "Café Arábica", icone: "fa-mug-hot", unidade: "Milhões de Sacas (60kg)",
+                producao2627: "44.5",
+                evolucao: [39.8, 42.1, 44.5],
+                estados: { labels: ['MG', 'SP', 'BA', 'ES'], dados: [31.5, 5.2, 3.1, 2.5] },
+                fonte: "CONAB",
+                insight: "Minas Gerais continua sendo o principal alvo (mais de 70% do share nacional). A bienalidade positiva de 26/27 é o momento ideal para injetar insumos de alto valor agregado. Reforçar equipe comercial no Sul de Minas e Cerrado Mineiro."
+            },
+            cafe_robusta: {
+                nome: "Café Robusta (Conilon)", icone: "fa-mug-saucer", unidade: "Milhões de Sacas (60kg)",
+                producao2627: "18.2",
+                evolucao: [16.2, 17.1, 18.2],
+                estados: { labels: ['ES', 'RO', 'BA', 'MG'], dados: [11.5, 3.4, 2.1, 0.8] },
+                fonte: "CONAB",
+                insight: "Alta demanda da indústria de solúvel e exportação. O Espírito Santo domina, mas Rondônia apresenta o maior ritmo de tecnificação. Oportunidade estratégica de expansão territorial da Germinare em RO."
+            },
+            suco_laranja: {
+                nome: "Suco de Laranja (FCOJ)", icone: "fa-lemon", unidade: "Milhares de Toneladas",
+                producao2627: "1150",
+                evolucao: [980, 1050, 1150],
+                estados: { labels: ['SP', 'MG', 'PR', 'Outros'], dados: [820, 210, 80, 40] },
+                fonte: "Fundecitrus / CitrusBR",
+                insight: "O cinturão citrícola (SP/MG) sofre severamente com o Greening. Vendedores devem posicionar o portfólio nutricional da Germinare não apenas como adubação, mas como reforço imunológico para pomares sintomáticos."
+            },
+            algodao: {
+                nome: "Algodão (Pluma)", icone: "fa-shirt", unidade: "Milhões de Toneladas",
+                producao2627: "3.5",
+                evolucao: [3.1, 3.3, 3.5],
+                estados: { labels: ['MT', 'BA', 'GO', 'MS'], dados: [2.4, 0.7, 0.2, 0.1] },
+                fonte: "CONAB / Abrapa",
+                insight: "Cultura de altíssimo investimento por hectare. MT domina amplamente. Oportunidade para vendas de grandes volumes B2B (direto para mega grupos agrícolas) de reguladores de crescimento e defensivos."
+            },
+            caroco_algodao: {
+                nome: "Caroço de Algodão", icone: "fa-box-open", unidade: "Milhões de Toneladas",
+                producao2627: "4.6",
+                evolucao: [4.0, 4.3, 4.6],
+                estados: { labels: ['MT', 'BA', 'GO', 'MS'], dados: [3.2, 0.9, 0.3, 0.1] },
+                fonte: "CONAB",
+                insight: "Subproduto valioso para confinamentos (nutrição animal). O crescimento acompanha a pluma. Inteligência sugere cruzar dados de grandes confinamentos de gado em MT/GO com as algodoeiras para ações casadas."
+            },
+            ddg: {
+                nome: "DDG (Milho)", icone: "fa-industry", unidade: "Milhões de Toneladas",
+                producao2627: "4.2",
+                evolucao: [3.1, 3.6, 4.2],
+                estados: { labels: ['MT', 'GO', 'MS', 'PR'], dados: [2.8, 0.8, 0.4, 0.2] },
+                fonte: "UNEM (União Nac. do Etanol de Milho)",
+                insight: "Mercado em explosão (etanol de milho). A alta demanda por DDG incentiva o plantio de milho 2ª safra. A Germinare deve focar campanhas de híbridos e nutrição de milho no eixo MT/GO para abastecer essas usinas."
+            },
+            ddgs: {
+                nome: "DDGS (Seco com Solúveis)", icone: "fa-flask", unidade: "Milhões de Toneladas",
+                producao2627: "3.1",
+                evolucao: [2.2, 2.7, 3.1],
+                estados: { labels: ['MT', 'GO', 'MS', 'Outros'], dados: [2.1, 0.6, 0.3, 0.1] },
+                fonte: "UNEM",
+                insight: "Produto premium para exportação e ração suína/avícola. Segue a mesma lógica do DDG: a inteligência de mercado deve mapear a construção de novas usinas de etanol no Centro-Oeste para antecipar a demanda por insumos de milho na região."
+            },
+            cana: {
+                nome: "Cana de Açúcar", icone: "fa-cubes-stacked", unidade: "Milhões de Toneladas",
+                producao2627: "675.0",
+                evolucao: [654.4, 662.1, 675.0],
+                estados: { labels: ['SP', 'MG', 'GO', 'MS'], dados: [355.0, 78.5, 75.2, 48.0] },
+                fonte: "CONAB / UNICA",
+                insight: "Renovação de canaviais em SP e MG dita o ritmo. Foco total do time comercial em maturadores e herbicidas pré-emergentes. O mix açúcar/etanol favorece investimentos em usinas de MG."
+            }
+        };
+
+        function atualizarDashboard(culturaKey) {
+            const data = db[culturaKey];
+            
+            // Atualiza Cards
+            document.getElementById('valor-producao').innerText = data.producao2627;
+            document.getElementById('unidade-producao').innerText = data.unidade;
+            document.getElementById('icone-cultura').className = `fa-solid ${data.icone} text-3xl text-germinare-green`;
+            document.getElementById('texto-potencial').innerHTML = `<strong>Análise IM:</strong> ${data.insight}`;
+            
+            // Atualiza Fontes
+            document.getElementById('fonte-evolucao').innerText = `Fonte: ${data.fonte}`;
+            document.getElementById('fonte-estados').innerText = `Fonte: ${data.fonte}`;
+
+            // Destroi gráficos antigos se existirem
+            if (chartEv) chartEv.destroy();
+            if (chartEst) chartEst.destroy();
+
+            // Renderiza Gráfico 1: Evolução (Line)
+            const ctxEv = document.getElementById('chartEvolucao').getContext('2d');
+            chartEv = new Chart(ctxEv, {
+                type: 'line',
+                data: {
+                    labels: ['Safra 24/25', 'Safra 25/26', 'Projeção 26/27'],
+                    datasets: [{
+                        label: `Produção (${data.nome})`,
+                        data: data.evolucao,
+                        borderColor: '#22c55e', // germinare-green
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#f97316', // germinare-orange
+                        pointBorderColor: '#0f172a',
+                        pointBorderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#fff',
+                            bodyColor: '#e2e8f0',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) { return `${context.parsed.y} ${data.unidade}`; }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: false,
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Renderiza Gráfico 2: Praças (Doughnut)
+            const ctxEst = document.getElementById('chartEstados').getContext('2d');
+            chartEst = new Chart(ctxEst, {
+                type: 'doughnut',
+                data: {
+                    labels: data.estados.labels,
+                    datasets: [{
+                        data: data.estados.dados,
+                        backgroundColor: [
+                            '#f97316', // Laranja Principal
+                            '#22c55e', // Verde
+                            '#3b82f6', // Azul suporte
+                            '#475569'  // Cinza
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#1e293b', // Cor do fundo do card
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15,
+                                color: '#e2e8f0'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            borderColor: '#334155',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.chart._metasets[context.datasetIndex].total;
+                                    const value = context.parsed;
+                                    const percent = ((value / total) * 100).toFixed(1) + '%';
+                                    return ` ${context.label}: ${value} (${percent})`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Inicializa o Dashboard com a primeira cultura (Soja)
+        window.onload = () => {
+            atualizarDashboard('soja');
+        };
+    </script>
+</body>
+</html>
